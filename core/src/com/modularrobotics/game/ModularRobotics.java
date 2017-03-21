@@ -55,7 +55,7 @@ public class ModularRobotics extends ApplicationAdapter implements InputProcesso
 		cameraController.setVelocity(30);
 		Gdx.input.setInputProcessor(new InputMultiplexer (this, cameraController));
 		
-		logic = new Logic(container, camera, cubeSize);
+		logic = new Logic(container, targets, modules, camera, cubeSize);
 		selecting = -1;
 		
 		selectorCube = SelectorCube.createSelectorCube(cubeSize);
@@ -71,6 +71,9 @@ public class ModularRobotics extends ApplicationAdapter implements InputProcesso
 		selectorCube = logic.refreshSelector(selectorCube, Gdx.input.getX(), Gdx.input.getY());
 		
 		container.forEach(cube -> batch.render(cube, environment));
+		targets.forEach(target -> batch.render(target, environment));
+		modules.forEach(module -> batch.render(module, environment));
+		
 		batch.render(selectorCube, environment);
 		cameraController.update();
 		batch.end();
@@ -98,11 +101,25 @@ public class ModularRobotics extends ApplicationAdapter implements InputProcesso
 		if (keycode == Input.Keys.D) {
 			cameraController.keyDown(keycode);
 		}
+		
+		//inserts Cube object
 		if (keycode == Input.Keys.SPACE) {
 			logic.placeCube(selectorCube);
 		}
+		
+		//removes Cube object
 		if (keycode == Input.Keys.BACKSPACE) {
 			logic.removeCube(selecting);
+		}
+		
+		//cycles through objects: cube, module, target
+		if (keycode == Input.Keys.C) {
+			selectorCube = SelectorCube.cycleMode(selectorCube);
+		}
+		
+		if (keycode == Input.Keys.F) {
+			configWriter.writeAll(container, targets, modules);
+			System.out.println("Your file has been saved!");
 		}
 				return true;
 	}
@@ -131,10 +148,6 @@ public class ModularRobotics extends ApplicationAdapter implements InputProcesso
 			cameraController.keyUp(keycode);
 		}
 		
-		if (keycode == Input.Keys.M) {
-			Module module = SelectorCube.createModule(cubeSize);
-			modules.add(module);
-		}
 		return true;
 	}
 	

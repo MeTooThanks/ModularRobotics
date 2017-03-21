@@ -8,7 +8,7 @@ import com.badlogic.gdx.math.collision.BoundingBox;
 
 public class Module extends ModelInstance {
 	
-	   Vector3 center;
+		Vector3 center;
 	    BoundingBox bounds;
 	    Vector3 dimensions;
 	    float radius;
@@ -26,4 +26,6 @@ public class Module extends ModelInstance {
 
 	        radius = dimensions.len()/2f;
 	    }
+	    
+	    //public boolean isConstrained
 }

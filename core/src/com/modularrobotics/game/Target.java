@@ -26,4 +26,6 @@ public class Target extends ModelInstance {
 
 	        radius = dimensions.len()/2f;
 	    }
+	    
+	    //public int surroundingCubes
 }
