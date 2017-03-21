@@ -18,6 +18,8 @@ import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 public class Logic {
 	
 	ArrayList<Cube> environment;
+	ArrayList<Target> targets;
+	ArrayList<Module> modules;
 	PerspectiveCamera camera;
 	Vector3 position;
 	int selecting;
@@ -27,8 +29,10 @@ public class Logic {
 	Plane plane;
 	int cubeSize;
 	
-	public Logic(ArrayList<Cube> initEnvironment, PerspectiveCamera initCamera, int initCubeSize) {
+	public Logic(ArrayList<Cube> initEnvironment, ArrayList<Target> initTarget, ArrayList<Module> initModule, PerspectiveCamera initCamera, int initCubeSize) {
 		environment = initEnvironment;
+		targets = initTarget;
+		modules = initModule;
 		camera = initCamera;
 		cubeSize = initCubeSize;
 		position = new Vector3();
@@ -97,17 +101,11 @@ public class Logic {
 		Vector3 directionVector = new Vector3();
 		Intersector.intersectRayPlane(ray, plane, directionVector);
 		
-		//moves green cube in steps of 5(cubeSize)
 		float x = directionVector.x - directionVector.x % cubeSize;
 		float y = getPlane(oldSelectorCube);
 		float z = directionVector.z - directionVector.z % cubeSize;
-		
-		ModelBuilder modelBuilder = new ModelBuilder();
-        Model model = modelBuilder.createBox(cubeSize, cubeSize, cubeSize,
-                new Material(ColorAttribute.createDiffuse(Color.GREEN)),
-                Usage.Position | Usage.Normal);
         
-		Cube selectorCube = new Cube(model, x, y, z);
+		Cube selectorCube = new Cube(SelectorCube.model, x, y, z);
 		return selectorCube;
 	}
 	
@@ -116,13 +114,39 @@ public class Logic {
 		Vector3 position = new Vector3();
 		oldSelectorCube.transform.getTranslation(position);
 
-		
-		ModelBuilder modelBuilder = new ModelBuilder();
+		if (SelectorCube.mode == SelectorCube.PlacementMode.CUBE) {
+			
+			ModelBuilder modelBuilder = new ModelBuilder();
 	        Model model = modelBuilder.createBox(cubeSize, cubeSize, cubeSize,
 	                new Material(ColorAttribute.createDiffuse(Color.GRAY)),
 	                Usage.Position | Usage.Normal);
+	    
 	        
 	     environment.add(new Cube(model, position.x, position.y, position.z));
+		}
+		
+		if (SelectorCube.mode == SelectorCube.PlacementMode.TARGET) {
+			
+			ModelBuilder modelBuilder = new ModelBuilder();
+	        Model model = modelBuilder.createBox(cubeSize, cubeSize, cubeSize,
+	                new Material(ColorAttribute.createDiffuse(Color.BLUE)),
+	                Usage.Position | Usage.Normal);
+	    
+	        
+	        targets.add(new Target(model, position.x, position.y, position.z));
+	     
+		}
+		
+		if (SelectorCube.mode == SelectorCube.PlacementMode.MODULE) {
+			
+				ModelBuilder modelBuilder = new ModelBuilder();
+		        Model model = modelBuilder.createBox(cubeSize, cubeSize, cubeSize,
+		                new Material(ColorAttribute.createDiffuse(Color.RED)),
+		                Usage.Position | Usage.Normal);
+		    
+		        
+		     modules.add(new Module(model, position.x, position.y, position.z));
+			}
 	}
 	
 	public void removeCube(int value) {
@@ -137,24 +161,52 @@ public class Logic {
 		
 		Ray ray = new Ray(position, new Vector3(0, -1, 0));
 		
-		Vector3 positionEnvCube = new Vector3();
-				
+		Vector3 positionObj = new Vector3();
+		float height = 0;	
 		float distance = -1;
 		for(int i = environment.size() - 1; i >= 0; i--) {
 			Cube temp = environment.get(i);
-			temp.transform.getTranslation(positionEnvCube);
-			positionEnvCube.add(temp.center);
+			temp.transform.getTranslation(positionObj);
+			positionObj.add(temp.center);
 			
-			float dist2 = ray.origin.dst2(positionEnvCube);
+			float dist2 = ray.origin.dst2(positionObj);
 			if (distance >= 0f && dist2 > distance)
 				continue;
-			if(Intersector.intersectRaySphere(ray, positionEnvCube, temp.radius, null)) {
+			if(Intersector.intersectRaySphere(ray, positionObj, temp.radius, null)) {
 				distance = dist2;
-				return positionEnvCube.y + cubeSize;
+				height = positionObj.y + cubeSize;
+			}	
+		}
+		for(int i = targets.size() - 1; i >= 0; i--) {
+			Target temp = targets.get(i);
+			temp.transform.getTranslation(positionObj);
+			positionObj.add(temp.center);
+			
+			float dist2 = ray.origin.dst2(positionObj);
+			if (distance >= 0f && dist2 > distance)
+				continue;
+			if(Intersector.intersectRaySphere(ray, positionObj, temp.radius, null)) {
+				distance = dist2;
+				if (positionObj.y + cubeSize > height)
+					height = positionObj.y + cubeSize;
+			}	
+		}
+		for(int i = modules.size() - 1; i >= 0; i--) {
+			Module temp = modules.get(i);
+			temp.transform.getTranslation(positionObj);
+			positionObj.add(temp.center);
+			
+			float dist2 = ray.origin.dst2(positionObj);
+			if (distance >= 0f && dist2 > distance)
+				continue;
+			if(Intersector.intersectRaySphere(ray, positionObj, temp.radius, null)) {
+				distance = dist2;
+				if (positionObj.y + cubeSize > height)
+					height = positionObj.y + cubeSize;
 			}	
 		}
 		
-		return 0;
+		return height;
 		
 	}
 }
