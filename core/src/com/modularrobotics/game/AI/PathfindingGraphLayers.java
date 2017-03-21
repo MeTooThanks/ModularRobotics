@@ -1,4 +1,4 @@
-package com.modularrobotics.game;
+package com.modularrobotics.game.AI;
 
 import java.util.ArrayList;
 
@@ -147,7 +147,7 @@ public class PathfindingGraphLayers {
 						if (neighbor.allNeighbors().contains(nodeToDelete)) {
 							neighbor.allNeighbors().remove(nodeToDelete);
 						}
-					});
+					}
 					layer.nodes.remove(nodeToDelete);
 				}
 			}

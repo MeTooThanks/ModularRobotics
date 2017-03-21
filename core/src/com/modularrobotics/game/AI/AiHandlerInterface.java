@@ -1,4 +1,4 @@
-package com.modularrobotics.game;
+package com.modularrobotics.game.AI;
 
 import java.util.ArrayList;
 
