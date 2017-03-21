@@ -19,6 +19,8 @@ public class ModularRobotics extends ApplicationAdapter implements InputProcesso
 	ModelBatch batch;
 	PerspectiveCamera camera;
 	ArrayList<Cube> container;
+	ArrayList<Target> targets;
+	ArrayList<Module> modules;
 	Environment environment;
 	FirstPersonCameraController cameraController;
 	Logic logic;
@@ -38,6 +40,9 @@ public class ModularRobotics extends ApplicationAdapter implements InputProcesso
 		camera.update();
 		
 		container = new ArrayList<Cube>();
+		targets = new ArrayList<Target>();
+		modules = new ArrayList<Module>();
+		
 		createGrid.createNewGrid(20, 20, cubeSize, container);
 		
 		environment = new Environment();
@@ -47,13 +52,14 @@ public class ModularRobotics extends ApplicationAdapter implements InputProcesso
 				-1f, -0.8f, -0.2f));
 		
 		cameraController = new FirstPersonCameraController(camera);
-		Gdx.input.setInputProcessor(new InputMultiplexer (cameraController, this));
+		cameraController.setVelocity(30);
+		Gdx.input.setInputProcessor(new InputMultiplexer (this, cameraController));
 		
 		logic = new Logic(container, camera, cubeSize);
 		selecting = -1;
 		
 		selectorCube = SelectorCube.createSelectorCube(cubeSize);
-	
+		
 	}
 
 	@Override
@@ -62,7 +68,8 @@ public class ModularRobotics extends ApplicationAdapter implements InputProcesso
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT | GL20.GL_DEPTH_BUFFER_BIT);
 		batch.begin(camera);
 
-		//insert commands to draw here
+		selectorCube = logic.refreshSelector(selectorCube, Gdx.input.getX(), Gdx.input.getY());
+		
 		container.forEach(cube -> batch.render(cube, environment));
 		batch.render(selectorCube, environment);
 		cameraController.update();
@@ -91,7 +98,13 @@ public class ModularRobotics extends ApplicationAdapter implements InputProcesso
 		if (keycode == Input.Keys.D) {
 			cameraController.keyDown(keycode);
 		}
-		return true;
+		if (keycode == Input.Keys.SPACE) {
+			logic.placeCube(selectorCube);
+		}
+		if (keycode == Input.Keys.BACKSPACE) {
+			logic.removeCube(selecting);
+		}
+				return true;
 	}
 	
 	@Override
@@ -99,14 +112,34 @@ public class ModularRobotics extends ApplicationAdapter implements InputProcesso
 		return true;
 	}
 	
+	
 	@Override
 	public boolean keyUp(int keycode) {
+		if (keycode == Input.Keys.W) {
+			cameraController.keyUp(keycode);
+		}
+		
+		if (keycode == Input.Keys.A) {
+			cameraController.keyUp(keycode);
+		}
+		
+		if (keycode == Input.Keys.S) {
+			cameraController.keyUp(keycode);
+		}
+		
+		if (keycode == Input.Keys.D) {
+			cameraController.keyUp(keycode);
+		}
+		
+		if (keycode == Input.Keys.M) {
+			Module module = SelectorCube.createModule(cubeSize);
+			modules.add(module);
+		}
 		return true;
 	}
 	
 	@Override
 	public boolean mouseMoved(int screenX, int screenY) {
-		selectorCube = logic.refreshSelector(selectorCube, screenX, screenY);
 		return true;
 	}
 	
@@ -123,6 +156,7 @@ public class ModularRobotics extends ApplicationAdapter implements InputProcesso
 	
 	@Override
 	public boolean touchDragged(int screenX, int screenY, int pointer) {
+		cameraController.touchDragged(screenX, screenY, pointer);
 		return true;
 	}
 	
@@ -136,3 +170,4 @@ public class ModularRobotics extends ApplicationAdapter implements InputProcesso
 		return true;
 }
 }
+
