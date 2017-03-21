@@ -8,6 +8,7 @@ public class PathfindingNode {
 	Vector3 position;
 	int layer;
 	ArrayList<PathfindingNode> neighbors;
+	int cumulatedDistance;
 	boolean isTargetSeat;
 	
 	public PathfindingNode(float x, float y, float z, int initLayer) {
@@ -16,8 +17,20 @@ public class PathfindingNode {
 		layer = initLayer;
 	}
 	
+	public int getDistance() {
+		return cumulatedDistance;
+	}
+	
+	public void setDistance(int value) {
+		cumulatedDistance = value;
+	}
+	
+	public void addDistance(int value) {
+		cumulatedDistance += value;
+	}
+	
 	public PathfindingNode cloneNode() {
-		PathfindingNode clonedNode = new PathfindingNode(position.x, position.y, position.z, layer);
+		PathfindingNode clonedNode = new PathfindingNode(position.x, position.y, position.z, layer+1);
 		return clonedNode;
 	}
 	

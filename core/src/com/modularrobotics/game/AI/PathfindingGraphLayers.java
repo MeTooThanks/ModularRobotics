@@ -12,6 +12,12 @@ public class PathfindingGraphLayers {
 		layers.add(new PathfindingGraph());
 	}
 	
+	public void resetDistances() {
+		layers.forEach(layer -> {
+			layer.nodes.forEach(node -> node.setDistance(0));
+		});
+	}
+	
 	public void cloneTopLayer() {
 		//clones the nodes
 		PathfindingGraph topLayer = layers.get(layers.size()-1);
@@ -71,7 +77,7 @@ public class PathfindingGraphLayers {
 		deleteBusyNodes(projectedPath);
 	}
 	
-	//deletes busy nodes from the graph (every node in projectedPath with an odd index or index 0)
+	//deletes busy nodes from the graph (every node in projectedPath with an even index or index 0)
 	//detailing why this is the case is out of the scope of the commentary here
 	public void deleteBusyNodes(ArrayList<PathfindingNode> projectedPath) {
 		int layerOfCurrentNode = -1;
@@ -80,11 +86,13 @@ public class PathfindingGraphLayers {
 			if ((i & 1) == 0) {
 				PathfindingNode currentNode = projectedPath.get(i);
 				layerOfCurrentNode = currentNode.layer;
-				layers.get(layerOfCurrentNode).nodes.forEach(node -> {
-					if (node.allNeighbors().contains(currentNode)) {
+				currentNode.allNeighbors().forEach(node -> {
+					if (node.layer == currentNode.layer) {
 						node.allNeighbors().remove(currentNode);
 					}
 				});
+				//SYMMETRIC REMOVAL? CAN I JUST JUMP TO THE INDEX? CHECK!
+				int indexOfCurrentNode = layers.get(layerOfCurrentNode).nodes.indexOf(currentNode);
 				if (layerOfCurrentNode > 0) {
 					layers.get(layerOfCurrentNode-1).nodes.forEach(node -> {
 						if (node.allNeighbors().contains(currentNode)) {
@@ -122,5 +130,27 @@ public class PathfindingGraphLayers {
 		}
 		if (layers.get(layer).nodes.contains(targetNode))
 			layers.get(layer).nodes.remove(targetNode);
+	}
+	
+	//since the nodes get constructed out of their positions, we have to identify the nodes according to their positions.
+	public void removeUnconstrainedModuleNodes(ArrayList<Vector3> unconstrainedModuleNodes) {
+		for (Vector3 unconModNode : unconstrainedModuleNodes) {
+			for (PathfindingGraph layer : layers) {
+				PathfindingNode nodeToDelete = null;
+				for (PathfindingNode node : layer.nodes) {
+					if (node.hasPosition(unconModNode)) {
+						nodeToDelete = node;
+					}
+				}
+				if (nodeToDelete != null) {
+					for (PathfindingNode neighbor : nodeToDelete.allNeighbors()) {
+						if (neighbor.allNeighbors().contains(nodeToDelete)) {
+							neighbor.allNeighbors().remove(nodeToDelete);
+						}
+					});
+					layer.nodes.remove(nodeToDelete);
+				}
+			}
+		}
 	}
 }
