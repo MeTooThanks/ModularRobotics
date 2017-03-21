@@ -22,11 +22,7 @@ public class createGrid {
 
         for(float w = 0; w < width*cubeSize; w = w + cubeSize){
             for (float l = 0; l < length*cubeSize; l = l + cubeSize) {
-            	for (float y = 0; y < length*cubeSize; y = y +cubeSize) {
-            		
-            	
-                container.add(new Cube(model, l, y, w));
-            	}
+                container.add(new Cube(model, l, 0, w));
             }
         }
     }
