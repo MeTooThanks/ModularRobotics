@@ -96,9 +96,10 @@ public class Logic {
 		Ray ray = camera.getPickRay(screenX, screenY);
 		Vector3 directionVector = new Vector3();
 		Intersector.intersectRayPlane(ray, plane, directionVector);
+		
 		//moves green cube in steps of 5(cubeSize)
 		float x = directionVector.x - directionVector.x % cubeSize;
-		float y = getHeight(oldSelectorCube);
+		float y = getPlane(oldSelectorCube);
 		float z = directionVector.z - directionVector.z % cubeSize;
 		
 		ModelBuilder modelBuilder = new ModelBuilder();
@@ -110,7 +111,26 @@ public class Logic {
 		return selectorCube;
 	}
 	
-	public float getHeight(Cube oldSelectorCube) {
+	public void placeCube(Cube oldSelectorCube) {
+		
+		Vector3 position = new Vector3();
+		oldSelectorCube.transform.getTranslation(position);
+
+		
+		ModelBuilder modelBuilder = new ModelBuilder();
+	        Model model = modelBuilder.createBox(cubeSize, cubeSize, cubeSize,
+	                new Material(ColorAttribute.createDiffuse(Color.GRAY)),
+	                Usage.Position | Usage.Normal);
+	        
+	     environment.add(new Cube(model, position.x, position.y, position.z));
+	}
+	
+	public void removeCube(int value) {
+		environment.remove(value);
+	}
+	
+	
+	public float getPlane(Cube oldSelectorCube) {
 		
 		Vector3 position = new Vector3();
 		oldSelectorCube.transform.getTranslation(position);
