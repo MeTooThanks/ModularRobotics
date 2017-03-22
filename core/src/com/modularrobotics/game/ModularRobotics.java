@@ -118,7 +118,7 @@ public class ModularRobotics extends ApplicationAdapter implements InputProcesso
 		}
 		
 		if (keycode == Input.Keys.F) {
-			configWriter.writeAll(container, targets, modules);
+			//configWriter.writeAll(container, targets, modules);
 			System.out.println("Your file has been saved!");
 		}
 				return true;

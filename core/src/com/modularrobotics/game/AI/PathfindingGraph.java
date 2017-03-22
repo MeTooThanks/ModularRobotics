@@ -68,6 +68,12 @@ public class PathfindingGraph {
 					if (!secondNode.allNeighbors().contains(firstNode))
 						secondNode.addNeighbor(firstNode);
 				}
+				if (secondNode.hasPosition(firstNode.position().add(new Vector3(0,-1,0)))) {
+					if (!firstNode.allNeighbors().contains(secondNode))
+						firstNode.addNeighbor(secondNode);
+					if (!secondNode.allNeighbors().contains(firstNode))
+						secondNode.addNeighbor(firstNode);
+				}
 			}
 		}
 	}

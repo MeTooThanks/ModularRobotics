@@ -1,8 +1,11 @@
-package com.modularrobotics.game;
+package com.modularrobotics.game.AI;
 
 import java.util.ArrayList;
 
 import com.badlogic.gdx.math.Vector3;
+import com.modularrobotics.game.Cube;
+import com.modularrobotics.game.Module;
+import com.modularrobotics.game.Target;
 
 public class AiHandler implements AiHandlerInterface{
 	PathfindingGraphLayers pgLayers;
@@ -18,6 +21,7 @@ public class AiHandler implements AiHandlerInterface{
 			ArrayList<Target> targets) {
 		pgLayers = new PathfindingGraphLayers();
 		constructGraph();
+		dijkstra = new Dijkstra();
 	}
 	
 	//initially, ALL modules calculate their adjacent nodes for the graph!
@@ -25,12 +29,64 @@ public class AiHandler implements AiHandlerInterface{
 	//Important!!
 	public void constructGraph() {
 		singleGraphLayer = pgLayers.layers.get(0);
+		ArrayList<Vector3> possibleNeighbors = new ArrayList<Vector3>();
+		possibleNeighbors.add(new Vector3(0,0,1));
+		possibleNeighbors.add(new Vector3(0,0,-1));
+		possibleNeighbors.add(new Vector3(-1,0,0));
+		possibleNeighbors.add(new Vector3(1,0,0));
+		possibleNeighbors.add(new Vector3(0,1,0));
+		possibleNeighbors.add(new Vector3(1,0,1));
+		possibleNeighbors.add(new Vector3(1,0,-1));
+		possibleNeighbors.add(new Vector3(-1,0,-1));
+		possibleNeighbors.add(new Vector3(-1,0,1));
+		possibleNeighbors.add(new Vector3(0,1,1));
+		possibleNeighbors.add(new Vector3(1,1,0));
+		possibleNeighbors.add(new Vector3(0,1,-1));
+		possibleNeighbors.add(new Vector3(-1,1,0));
 		
-		//add nodes here
+		ArrayList<PathfindingNode> nodes = new ArrayList<PathfindingNode>();
+		//checks if adjacent nodes are unoccupied
+		for (Cube env : environment) {
+			for (Vector3 vector : possibleNeighbors) {
+				Vector3 envPosition = new Vector3();
+				env.transform.getTranslation(envPosition);
+				envPosition.add(vector);
+				nodes.add(new PathfindingNode(envPosition.x, envPosition.y, envPosition.z, 0));
+				for (Cube cubes : environment) {
+					Vector3 position = new Vector3();
+					cubes.transform.translate(position);
+					if (position.epsilonEquals(envPosition, 0)) {
+					nodes.remove(nodes.size()-1);
+					}
+				}
+			}
+		}
+		for (Module mod : modules) {
+			for (Vector3 vector : possibleNeighbors) {
+				Vector3 modPosition = new Vector3();
+				mod.transform.getTranslation(modPosition);
+				modPosition.add(vector);
+				nodes.add(new PathfindingNode(modPosition.x, modPosition.y, modPosition.z, 0));
+				for (Cube cubes : environment) {
+					Vector3 position = new Vector3();
+					cubes.transform.translate(position);
+					if (position.epsilonEquals(modPosition, 0)) {
+						nodes.remove(nodes.size()-1);
+					}
+				}
+			}
+		}
+		for (Target target : targets) {
+			Vector3 targetPosition = new Vector3();
+			target.transform.getTranslation(targetPosition);
+			nodes.add(new PathfindingNode(targetPosition.x, targetPosition.y, targetPosition.z, 0));
+		}
 		
 		pgLayers.layers.get(0).connectNodes();
 	}
 	
+	
+	/*
 	public ArrayList<PathfindingNode> pollPath(PathfindingNode start, PathfindingNode target) {
 		dijkstra = new Dijkstra();
 		pgLayers.resetDistances();
@@ -54,4 +110,5 @@ public class AiHandler implements AiHandlerInterface{
 		
 		return unconstrainedModuleNodes;
 	}
+	*/
 }

@@ -191,6 +191,7 @@ public class Logic {
 					height = positionObj.y + cubeSize;
 			}	
 		}
+		
 		for(int i = modules.size() - 1; i >= 0; i--) {
 			Module temp = modules.get(i);
 			temp.transform.getTranslation(positionObj);
@@ -209,4 +210,5 @@ public class Logic {
 		return height;
 		
 	}
+	
 }

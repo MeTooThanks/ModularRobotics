@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.collision.BoundingBox;
 public class Cube extends ModelInstance {
 
     Vector3 center;
+    public Vector3 position;
     BoundingBox bounds;
     Vector3 dimensions;
     float radius;
@@ -20,7 +21,8 @@ public class Cube extends ModelInstance {
         bounds = new BoundingBox();
         dimensions = new Vector3();
         calculateBoundingBox(bounds);
-
+        position = new Vector3();
+        transform.getTranslation(position);
         bounds.getCenter(center);
         bounds.getDimensions(dimensions);
 

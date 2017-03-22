@@ -10,15 +10,29 @@ public class PathfindingNode {
 	ArrayList<PathfindingNode> neighbors;
 	int cumulatedDistance;
 	boolean isTargetSeat;
+	PathfindingNode previous;
 	
 	public PathfindingNode(float x, float y, float z, int initLayer) {
 		position = new Vector3(x, y, z);
 		neighbors = new ArrayList<PathfindingNode>();
 		layer = initLayer;
+		cumulatedDistance = Integer.MAX_VALUE;
+	}
+	
+	public PathfindingNode getPrevious() {
+		return previous;
+	}
+	
+	public void setPrevious(PathfindingNode newPrevious) {
+		previous = newPrevious;
 	}
 	
 	public int getDistance() {
 		return cumulatedDistance;
+	}
+	
+	public void resetDistance() {
+		cumulatedDistance = Integer.MAX_VALUE;
 	}
 	
 	public void setDistance(int value) {
