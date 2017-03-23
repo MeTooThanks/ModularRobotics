@@ -12,18 +12,28 @@ public class Dijkstra {
 	
 	public ArrayList<PathfindingNode> getPath(PathfindingNode initStart,
 					PathfindingNode initTarget,
-					ArrayList<PathfindingNode> initGraph) {
+					PathfindingGraphLayers initGraph) {
 		start = initStart;
 		target = initTarget;
-		graph = initGraph;
+		start.cumulatedDistance = 0;
+		ArrayList<PathfindingNode> graphNodes = new ArrayList<PathfindingNode>();
 		
+		for (PathfindingGraph layer : initGraph.layers) {
+			for (PathfindingNode nodes : layer.nodes) {
+				graphNodes.add(nodes);
+			}
+		}
+		graph = graphNodes;
+		System.out.println("graph size: " +graph.size());
 		possibleTargets = new ArrayList<PathfindingNode>();
 		for (PathfindingNode node : graph) {
+			if (target == null)
+				System.out.println("isNull!");
 			if (node.hasPosition(target.position)) {
 				possibleTargets.add(node);
 			}
 		}
-		
+		System.out.println(graph.size());
 		pq = new PriorityQueue<PathfindingNode>(graph.size(), new Comparator<PathfindingNode>() {
 			@Override
 			public int compare(PathfindingNode node1, PathfindingNode node2) {
@@ -35,15 +45,23 @@ public class Dijkstra {
 					return 0;
 			}
 		});
-		
+		for (PathfindingNode node : graph) {
+			pq.add(node);
+		}
+		System.out.println("pqs: " +pq.size());
 		ArrayList<PathfindingNode> finishedPile = new ArrayList<PathfindingNode>();
-		while(!pq.isEmpty()) {
-			PathfindingNode current = pq.poll();
+		boolean bla = true;
+		while(!pq.isEmpty() && bla) {
+			PathfindingNode current = pq.remove();
 			finishedPile.add(current);
-			
+
 			for (PathfindingNode neighbor : current.allNeighbors()) {
-				if (neighbor.cumulatedDistance + 1 > current.cumulatedDistance) {
-					pq.remove(neighbor);
+				if (pq.contains(neighbor) && neighbor.cumulatedDistance > current.cumulatedDistance-1) {
+					if(!pq.remove(neighbor)) {
+						bla = !bla;
+						break;
+						
+					}
 					neighbor.cumulatedDistance = current.cumulatedDistance+1;
 					pq.add(neighbor);
 					neighbor.setPrevious(current);
@@ -53,16 +71,42 @@ public class Dijkstra {
 				break;
 			}
 		}
-		
+
 		graph.forEach(node -> node.resetDistance());
+		
+	//	System.out.println("paths: " +path.size());
 		ArrayList<PathfindingNode> path = new ArrayList<PathfindingNode>();
-		PathfindingNode reverseCurrent = path.get(path.size()-1);
+		for (int i = finishedPile.size()-1; i >= 0; i--) {
+			System.out.println("path: " +finishedPile.get(i).position.toString());
+		}
+		PathfindingNode reverseCurrent = finishedPile.get(finishedPile.size()-1);
+		if (reverseCurrent.previous == null)
+			return null;
+		
+		reverseCurrent.isTargetSeat = true;
 		while(reverseCurrent != null) {
 			path.add(reverseCurrent);
+			System.out.println("dg: " +reverseCurrent.position.toString());
 			reverseCurrent = reverseCurrent.previous;
 		}
 		
-		return path;
+		ArrayList<PathfindingNode> finalPath = new ArrayList<PathfindingNode>();
+		for (int i = path.size()-1; i >= 0; i--) {
+			finalPath.add(path.get(i));
+		}
+		for (PathfindingNode node : target.allNeighbors()) {
+
+			System.out.println("targetneih: " +node.position.toString());
+		}
+		for (int i = 0; i < finishedPile.size(); i++) {
+			finishedPile.get(i).previous = null;
+		}
+		
+		if (!finalPath.get(0).hasPosition(start.position))
+			return null;
+		System.out.println("target pos: " +target.position.toString());
+		
+		return finalPath;
 	}
 	
 	

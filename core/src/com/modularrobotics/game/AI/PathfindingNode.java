@@ -45,6 +45,7 @@ public class PathfindingNode {
 	
 	public PathfindingNode cloneNode() {
 		PathfindingNode clonedNode = new PathfindingNode(position.x, position.y, position.z, layer+1);
+		clonedNode.isTargetSeat = isTargetSeat;
 		return clonedNode;
 	}
 	

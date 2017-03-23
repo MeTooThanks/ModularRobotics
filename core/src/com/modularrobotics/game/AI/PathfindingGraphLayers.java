@@ -52,29 +52,34 @@ public class PathfindingGraphLayers {
 	//to be called IMMEDIATELY after a path for a module has been calculated!!
 	//!!!!!
 	public void project(ArrayList<PathfindingNode> path) {
-		ArrayList<PathfindingNode> projectedPath = new ArrayList<PathfindingNode>();
-		for (int i = 0; i < path.size(); i++) {
-			projectedPath.add(path.get(i));
-			//ends if next node is target (circumvents ugly checks for i being in scope)
-			if (path.get(i+1).isTargetSeat) {
-				projectedPath.add(path.get(i+1));
-				break;
-			}
-			//projects if module didn't decide to wait at that node
-			if (!(path.get(i).layer+1 == path.get(i+1).layer)) {
-				int layerOfNodeToBeProjected = path.get(i).layer;
-				int indexOfNodeToBeProjected = layers.get(layerOfNodeToBeProjected).nodes.indexOf(path.get(i));
-				
-				if (layerOfNodeToBeProjected+1 < layers.size()) {
-					projectedPath.add(layers.get(layerOfNodeToBeProjected+1).nodes.get(indexOfNodeToBeProjected));
-				} else {
-					cloneTopLayer();
-					projectedPath.add(layers.get(layerOfNodeToBeProjected+1).nodes.get(indexOfNodeToBeProjected));
+		if (path != null) {
+			ArrayList<PathfindingNode> projectedPath = new ArrayList<PathfindingNode>();
+			for (int i = 0; i < path.size(); i++) {
+				projectedPath.add(path.get(i));
+				//ends if next node is target (circumvents ugly checks for i being in scope)
+				if (path.get(i).isTargetSeat) {
+					System.out.println("IS TARGET SEAT");
+				}
+				if (path.size() > 1 && path.get(i+1).isTargetSeat) {
+					projectedPath.add(path.get(i+1));
+					break;
+				}
+				//projects if module didn't decide to wait at that node
+				if (!(path.get(i).layer+1 == path.get(i+1).layer)) {
+					int layerOfNodeToBeProjected = path.get(i).layer;
+					int indexOfNodeToBeProjected = layers.get(layerOfNodeToBeProjected).nodes.indexOf(path.get(i));
+					
+					if (layerOfNodeToBeProjected+1 < layers.size()) {
+						projectedPath.add(layers.get(layerOfNodeToBeProjected+1).nodes.get(indexOfNodeToBeProjected));
+					} else {
+						cloneTopLayer();
+						projectedPath.add(layers.get(layerOfNodeToBeProjected+1).nodes.get(indexOfNodeToBeProjected));
+					}
 				}
 			}
+			
+			deleteBusyNodes(projectedPath);
 		}
-		
-		deleteBusyNodes(projectedPath);
 	}
 	
 	//deletes busy nodes from the graph (every node in projectedPath with an even index or index 0)
@@ -86,12 +91,20 @@ public class PathfindingGraphLayers {
 			if ((i & 1) == 0) {
 				PathfindingNode currentNode = projectedPath.get(i);
 				layerOfCurrentNode = currentNode.layer;
-				currentNode.allNeighbors().forEach(node -> {
+				for (int k = 0; k < currentNode.allNeighbors().size(); k++) {
+					PathfindingNode node = currentNode.allNeighbors().get(k);
+					if (node.layer == currentNode.layer) {
+						node.allNeighbors().remove(currentNode);
+						
+					}
+				}
+				/*currentNode.allNeighbors().forEach(node -> {
 					if (node.layer == currentNode.layer) {
 						node.allNeighbors().remove(currentNode);
 					}
-				});
+				});*/
 				//SYMMETRIC REMOVAL? CAN I JUST JUMP TO THE INDEX? CHECK!
+				System.out.println("DEBUG: STILL NOT STUCK1");
 				int indexOfCurrentNode = layers.get(layerOfCurrentNode).nodes.indexOf(currentNode);
 				if (layerOfCurrentNode > 0) {
 					layers.get(layerOfCurrentNode-1).nodes.forEach(node -> {
@@ -108,6 +121,7 @@ public class PathfindingGraphLayers {
 		PathfindingNode targetNode = projectedPath.get(projectedPath.size()-1);
 		Vector3 targetNodePosition = targetNode.position();
 		
+		if(layer > 0)
 		for (PathfindingNode node : layers.get(layer-1).nodes) {
 			if (node.hasPosition(targetNodePosition)) {
 				targetNode = node;
@@ -130,6 +144,9 @@ public class PathfindingGraphLayers {
 		}
 		if (layers.get(layer).nodes.contains(targetNode))
 			layers.get(layer).nodes.remove(targetNode);
+		
+
+		System.out.println("DEBUG: STILL NOT STUCK2");
 	}
 	
 	//since the nodes get constructed out of their positions, we have to identify the nodes according to their positions.

@@ -37,38 +37,45 @@ public class PathfindingGraph {
 		mergeNodes();
 		
 		for (PathfindingNode firstNode : nodes) {
+			Vector3 firstNodePosition = new Vector3(firstNode.position.x, firstNode.position.y, firstNode.position.z);
 			for (PathfindingNode secondNode : nodes) {
-				if (secondNode.hasPosition(firstNode.position().add(new Vector3(0,0,1)))) {
+				firstNodePosition = new Vector3(firstNode.position.x, firstNode.position.y, firstNode.position.z);
+				if (secondNode.hasPosition(firstNodePosition.add(new Vector3(0,0,5)))) {
 					if (!firstNode.allNeighbors().contains(secondNode))
 						firstNode.addNeighbor(secondNode);
 					if (!secondNode.allNeighbors().contains(firstNode))
 						secondNode.addNeighbor(firstNode);
 				}
-				if (secondNode.hasPosition(firstNode.position().add(new Vector3(-1,0,0)))) {
+				firstNodePosition = new Vector3(firstNode.position.x, firstNode.position.y, firstNode.position.z);
+				if (secondNode.hasPosition(firstNode.position().add(new Vector3(-5,0,0)))) {
 					if (!firstNode.allNeighbors().contains(secondNode))
 						firstNode.addNeighbor(secondNode);
 					if (!secondNode.allNeighbors().contains(firstNode))
 						secondNode.addNeighbor(firstNode);
 				}
-				if (secondNode.hasPosition(firstNode.position().add(new Vector3(1,0,0)))) {
+				firstNodePosition = new Vector3(firstNode.position.x, firstNode.position.y, firstNode.position.z);
+				if (secondNode.hasPosition(firstNode.position().add(new Vector3(5,0,0)))) {
 					if (!firstNode.allNeighbors().contains(secondNode))
 						firstNode.addNeighbor(secondNode);
 					if (!secondNode.allNeighbors().contains(firstNode))
 						secondNode.addNeighbor(firstNode);
 				}
-				if (secondNode.hasPosition(firstNode.position().add(new Vector3(0,0,-1)))) {
+				firstNodePosition = new Vector3(firstNode.position.x, firstNode.position.y, firstNode.position.z);
+				if (secondNode.hasPosition(firstNode.position().add(new Vector3(0,0,-5)))) {
 					if (!firstNode.allNeighbors().contains(secondNode))
 						firstNode.addNeighbor(secondNode);
 					if (!secondNode.allNeighbors().contains(firstNode))
 						secondNode.addNeighbor(firstNode);
 				}
-				if (secondNode.hasPosition(firstNode.position().add(new Vector3(0,1,1)))) {
+				firstNodePosition = new Vector3(firstNode.position.x, firstNode.position.y, firstNode.position.z);
+				if (secondNode.hasPosition(firstNode.position().add(new Vector3(0,5,5)))) {
 					if (!firstNode.allNeighbors().contains(secondNode))
 						firstNode.addNeighbor(secondNode);
 					if (!secondNode.allNeighbors().contains(firstNode))
 						secondNode.addNeighbor(firstNode);
 				}
-				if (secondNode.hasPosition(firstNode.position().add(new Vector3(0,-1,0)))) {
+				firstNodePosition = new Vector3(firstNode.position.x, firstNode.position.y, firstNode.position.z);
+				if (secondNode.hasPosition(firstNode.position().add(new Vector3(0,-5,0)))) {
 					if (!firstNode.allNeighbors().contains(secondNode))
 						firstNode.addNeighbor(secondNode);
 					if (!secondNode.allNeighbors().contains(firstNode))
@@ -76,17 +83,60 @@ public class PathfindingGraph {
 				}
 			}
 		}
+		
+		for (PathfindingNode node : nodes) {
+			Vector3 posOfThisNode = new Vector3(node.position.x, node.position.y, node.position.z);
+			for (int i = 0; i < node.allNeighbors().size(); i++) {
+				PathfindingNode neighbor = node.allNeighbors().get(i);
+				Vector3 posOfOtherNode = new Vector3(neighbor.position.x, neighbor.position.y, neighbor.position.z);
+				posOfThisNode.sub(posOfOtherNode);
+				if (posOfThisNode.y == 5) {
+					deleteAllNeighborsWithoutNodeUnder(node);
+					break;
+				}
+			}
+		}
+	} 
+	
+	public void deleteAllNeighborsWithoutNodeUnder(PathfindingNode nodeToClean) {
+		ArrayList<PathfindingNode> levitatingNeighbors = new ArrayList<PathfindingNode>();
+		for (PathfindingNode node : nodeToClean.allNeighbors()) {
+			
+			Vector3 posOfThisNode = new Vector3(node.position.x, node.position.y, node.position.z);
+			for (PathfindingNode nodeNeighbors : node.allNeighbors()) {
+				Vector3 posOfOtherNode = new Vector3(nodeNeighbors.position.x, nodeNeighbors.position.y, nodeNeighbors.position.z);
+				posOfThisNode.sub(posOfOtherNode);
+				if (posOfThisNode.y == 5) {
+					levitatingNeighbors.add(node);
+					break;
+				}
+			}
+		}
+		
+		levitatingNeighbors.forEach(node -> {
+			nodeToClean.neighbors.remove(node);
+		});
+	}
+	
+	public boolean isNodeInList(ArrayList<PathfindingNode> list, PathfindingNode nodeToCheck) {
+		if (list.size() > 0)
+			for (PathfindingNode node : list) {
+				if (node.hasPosition(nodeToCheck.position))
+					return true;
+			}
+		return false;
 	}
 	
 	private void mergeNodes() {
-		ArrayList<PathfindingNode> toRemove = new ArrayList<PathfindingNode>();
-		nodes.forEach(node -> {
-			nodes.forEach(node2 -> {
-				if (node.equals(node2)) {
-					toRemove.add(node2);
-				}
-			});
-		});
-		toRemove.forEach(removeNode -> nodes.remove(removeNode));
+		ArrayList<PathfindingNode> toKeep = new ArrayList<PathfindingNode>();
+
+		System.out.println("nodes size before: " +toKeep.size());
+		for (int i = 0; i < nodes.size(); i++) {
+			if (!isNodeInList(toKeep, nodes.get(i))) {
+				toKeep.add(nodes.get(i));
+			}
+		}
+		System.out.println("nodes size after: " +toKeep.size());
+		nodes = toKeep;
 	}
 }
