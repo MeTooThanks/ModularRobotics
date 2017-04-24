@@ -25,6 +25,7 @@ public class ProcedureProcessor {
 		modules.forEach(module -> {
 			moduleQ.addLast(module);
 		});
+		System.out.println("ts: " +targets.size());
 		targetPQ = new PriorityQueue<Target>(targets.size(),
 				Comparator.comparingInt(t ->  t.getOpenConnections()));
 
@@ -34,7 +35,6 @@ public class ProcedureProcessor {
 		Queue<Module> unconstrainedModules = new Queue<Module>();
 		
 		if (!tempModule.isConstrained) {
-			System.out.println("debug");
 			unconstrainedModules.addFirst(tempModule);
 		}
 		while (tempModule.isConstrained && moduleQ.size > 0) {
@@ -79,6 +79,7 @@ public class ProcedureProcessor {
 				Vector3 modPos = new Vector3(module.position.x, module.position.y, module.position.z);
 				if (Math.abs((modPos.sub(target.position)).len()) < distance) {
 					paired = module;
+					distance = modPos.len();
 				}
 			}
 			toBePaired.remove(paired);

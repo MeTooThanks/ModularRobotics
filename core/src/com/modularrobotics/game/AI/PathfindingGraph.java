@@ -84,7 +84,7 @@ public class PathfindingGraph {
 			}
 		}
 		
-		for (PathfindingNode node : nodes) {
+		/*for (PathfindingNode node : nodes) {
 			Vector3 posOfThisNode = new Vector3(node.position.x, node.position.y, node.position.z);
 			for (int i = 0; i < node.allNeighbors().size(); i++) {
 				PathfindingNode neighbor = node.allNeighbors().get(i);
@@ -95,7 +95,7 @@ public class PathfindingGraph {
 					break;
 				}
 			}
-		}
+		} */
 	} 
 	
 	public void deleteAllNeighborsWithoutNodeUnder(PathfindingNode nodeToClean) {
@@ -129,14 +129,11 @@ public class PathfindingGraph {
 	
 	private void mergeNodes() {
 		ArrayList<PathfindingNode> toKeep = new ArrayList<PathfindingNode>();
-
-		System.out.println("nodes size before: " +toKeep.size());
 		for (int i = 0; i < nodes.size(); i++) {
 			if (!isNodeInList(toKeep, nodes.get(i))) {
 				toKeep.add(nodes.get(i));
 			}
 		}
-		System.out.println("nodes size after: " +toKeep.size());
 		nodes = toKeep;
 	}
 }

@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
+import com.badlogic.gdx.math.Vector3;
 
 import java.util.ArrayList;
 
@@ -22,13 +23,10 @@ public class createGrid {
 
         for(float w = 0; w < width*cubeSize; w = w + cubeSize){
             for (float l = 0; l < length*cubeSize; l = l + cubeSize) {
-                container.add(new Cube(model, l, 0, w));
+            	Vector3 cubePosition = new Vector3(l, 0, w);
+                container.add(new Cube(model, cubePosition.x, cubePosition.y, cubePosition.z));
             }
         }
-    }
-
-    public static Model model() {
-        return model;
     }
 }
 

@@ -9,6 +9,7 @@ import com.badlogic.gdx.math.Intersector;
 import com.badlogic.gdx.math.Plane;
 import com.badlogic.gdx.math.Vector3;
 import com.badlogic.gdx.math.collision.Ray;
+import com.modularrobotics.game.AI.AiHandler;
 import com.badlogic.gdx.graphics.g3d.Material;
 import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
@@ -23,34 +24,49 @@ public class Logic {
 	PerspectiveCamera camera;
 	Vector3 position;
 	int selecting;
-	int selecting2;
-	Material defaultMat;
+	int selectingCube;
+	int selectingTarget;
+	int selectingModule;
+	int cubeSize;
+	Material defaultMatCube;
+	Material defaultMatTarget;
+	Material defaultMatModule;
 	Material selectingMat;
 	Plane plane;
-	int cubeSize;
+	ObjectMode mode;
+	AiHandler AI;
 	
 	public Logic(ArrayList<Cube> initEnvironment, ArrayList<Target> initTarget, ArrayList<Module> initModule, PerspectiveCamera initCamera, int initCubeSize) {
 		environment = initEnvironment;
 		targets = initTarget;
 		modules = initModule;
 		camera = initCamera;
-		cubeSize = initCubeSize;
 		position = new Vector3();
 		selecting = -1;
-		selecting2 = -1;
-		defaultMat = new Material();
+		selectingCube = -1;
+		selectingTarget = -1;
+		selectingModule = -1; 
+		cubeSize = initCubeSize;
+		defaultMatCube = new Material();
+		defaultMatTarget = new Material();
+		defaultMatModule = new Material();
 		selectingMat = new Material();
+		mode = ObjectMode.CUBE;
 		
 		selectingMat.set(ColorAttribute.createDiffuse(Color.ORANGE));
-		defaultMat.set(ColorAttribute.createDiffuse(Color.GRAY));
+		defaultMatCube.set(ColorAttribute.createDiffuse(Color.GRAY));
+		defaultMatTarget.set(ColorAttribute.createDiffuse(Color.BLUE));
+		defaultMatModule.set(ColorAttribute.createDiffuse(Color.RED));
 		
 		Vector3 one = new Vector3(1, 0, 0);
 		Vector3 two = new Vector3(0, 0, 1);
 		Vector3 three = new Vector3(1, 0, 1);
 		
 		plane = new Plane(one, two, three);
-
-
+	}
+	
+	public enum ObjectMode {
+		MODULE, CUBE, TARGET;
 	}
 	
 	public int getObject(float screenX, float screenY) {
@@ -69,30 +85,199 @@ public class Logic {
 			if(Intersector.intersectRaySphere(ray, position, temp.radius, null)) {
 				selecting = i;
 				distance = dist2;
+				mode = ObjectMode.CUBE;
 			}
-		}	
+		}
+		
+		for(int i = 0; i < targets.size(); i++) {
+			Target temp = targets.get(i);
+			temp.transform.getTranslation(position);
+			position.add(temp.center);
+			
+			float dist2 = ray.origin.dst2(position);
+			if (distance >= 0f && dist2 > distance)
+				continue;
+			if(Intersector.intersectRaySphere(ray, position, temp.radius, null)) {
+				selecting = i;
+				distance = dist2;
+				mode = ObjectMode.TARGET;
+			}
+			
+		}
+		
+		for(int i = 0; i < modules.size(); i++) {
+			Module temp = modules.get(i);
+			temp.transform.getTranslation(position);
+			position.add(temp.center);
+			
+			float dist2 = ray.origin.dst2(position);
+			if (distance >= 0f && dist2 > distance)
+				continue;
+			if(Intersector.intersectRaySphere(ray, position, temp.radius, null)) {
+				selecting = i;
+				distance = dist2;
+				mode = ObjectMode.MODULE;
+			}
+		}
 		return selecting;
 	}
 
 
 	public void setSelected(int value) {
-		if (selecting2 == value)
-			return;
-		
-		if (selecting2 >= 0) {
-			Material mat = environment.get(selecting2).materials.get(0);
-			mat.clear();
-			mat.set(defaultMat);
+		if (mode == ObjectMode.CUBE) {
+			if (selectingCube == value) {
+				return;
+			}
+			
+			if (selectingCube >= 0 ) {
+				Material mat = null;
+				if (selectingCube >= 0) {
+					mat = environment.get(selectingCube).materials.get(0);
+					mat.clear();
+					mat.set(defaultMatCube);
+				}
+				
+				if (selectingTarget >= 0) {
+					mat = targets.get(selectingTarget).materials.get(0);
+					mat.clear();
+					mat.set(defaultMatTarget);
+				}
+				
+				if (selectingModule >= 0) {
+					mat = modules.get(selectingModule).materials.get(0);
+					mat.clear();
+					mat.set(defaultMatModule);
+				}
+			}
+			
+			selectingCube = value;
+			//selectingModule = -1;
+			//selectingTarget = -1;
+			
+			if (selectingCube >= 0 && mode == ObjectMode.CUBE) {
+				Material mat = environment.get(selectingCube).materials.get(0);
+				
+				defaultMatCube.clear();
+				defaultMatCube.set(mat);
+				mat.clear();
+				mat.set(selectingMat);
+				
+				if (selectingTarget >= 0) {
+					mat = targets.get(selectingTarget).materials.get(0);
+					mat.clear();
+					mat.set(defaultMatTarget);
+				}
+				
+				if (selectingModule >= 0) {
+					mat = modules.get(selectingModule).materials.get(0);
+					mat.clear();
+					mat.set(defaultMatModule);
+				}
+			}
 		}
 		
-		selecting2 = value;
+		if (mode == ObjectMode.TARGET) {
+			if (selectingTarget == value) {
+				return;
+			}
+			
+			if (selectingTarget >= 0) {
+				Material mat = null;
+				if (selectingCube >= 0) {
+					mat = environment.get(selectingCube).materials.get(0);
+					mat.clear();
+					mat.set(defaultMatCube);
+				}
+				
+				if (selectingTarget >= 0) {
+					mat = targets.get(selectingTarget).materials.get(0);
+					mat.clear();
+					mat.set(defaultMatTarget);
+				}
+				
+				if (selectingModule >= 0) {
+					mat = modules.get(selectingModule).materials.get(0);
+					mat.clear();
+					mat.set(defaultMatModule);
+				}
+			}
+			
+			selectingTarget = value;
+			//selectingModule = -1;
+		//	selectingCube = -1;
+			
+			if (selectingTarget >= 0 && mode == ObjectMode.TARGET) {
+				Material mat = targets.get(selectingTarget).materials.get(0);
+				
+				defaultMatTarget.clear();
+				defaultMatTarget.set(mat);
+				mat.clear();
+				mat.set(selectingMat);
+				
+				if (selectingCube >= 0) {
+					mat = environment.get(selectingCube).materials.get(0);
+					mat.clear();
+					mat.set(defaultMatCube);
+				}
+				
+				if (selectingModule >= 0) {
+					mat = modules.get(selectingModule).materials.get(0);
+					mat.clear();
+					mat.set(defaultMatModule);
+				}
+			}
+		}
 		
-		if (selecting2 >= 0) {
-			Material mat = environment.get(selecting2).materials.get(0);
-			defaultMat.clear();
-			defaultMat.set(mat);
-			mat.clear();
-			mat.set(selectingMat);
+		if (mode == ObjectMode.MODULE) {
+			if (selectingModule == value) {
+				return;
+			}
+			
+			if (selectingModule >= 0) {
+				Material mat = null;
+				if (selectingCube >= 0) {
+					mat = environment.get(selectingCube).materials.get(0);
+					mat.clear();
+					mat.set(defaultMatCube);
+				}
+				
+				if (selectingTarget >= 0) {
+					mat = targets.get(selectingTarget).materials.get(0);
+					mat.clear();
+					mat.set(defaultMatTarget);
+				}
+				
+				if (selectingModule >= 0) {
+					mat = modules.get(selectingModule).materials.get(0);
+					mat.clear();
+					mat.set(defaultMatModule);
+				}
+			}
+			
+			selectingModule = value;
+			//selectingTarget = -1;
+			//selectingCube = -1;
+			
+			if (selectingModule >= 0 && mode == ObjectMode.MODULE) {
+				Material mat = modules.get(selectingModule).materials.get(0);
+				
+				defaultMatModule.clear();
+				defaultMatModule.set(mat);
+				mat.clear();
+				mat.set(selectingMat);
+				
+				if (selectingCube >= 0) {
+					mat = environment.get(selectingCube).materials.get(0);
+					mat.clear();
+					mat.set(defaultMatCube);
+				}
+				
+				if (selectingTarget >= 0) {
+					mat = targets.get(selectingTarget).materials.get(0);
+					mat.clear();
+					mat.set(defaultMatTarget);
+				}
+			}
 		}
 	}
 	
@@ -105,11 +290,11 @@ public class Logic {
 		float y = getPlane(oldSelectorCube);
 		float z = directionVector.z - directionVector.z % cubeSize;
         
-		Cube selectorCube = new Cube(SelectorCube.model, x, y, z);
+		Cube selectorCube = new Cube(oldSelectorCube.model, x, y, z);
 		return selectorCube;
 	}
 	
-	public void placeCube(Cube oldSelectorCube) {
+	public void placeObject(Cube oldSelectorCube) {
 		
 		Vector3 position = new Vector3();
 		oldSelectorCube.transform.getTranslation(position);
@@ -149,10 +334,22 @@ public class Logic {
 			}
 	}
 	
-	public void removeCube(int value) {
-		environment.remove(value);
+	public void removeObject() {
+			if (mode == ObjectMode.CUBE && selectingCube >= 0) {
+				environment.remove(selectingCube);
+				selectingCube = -1;
+			}
+			
+			if (mode == ObjectMode.TARGET && selectingTarget >= 0) {
+				targets.remove(selectingTarget);
+				selectingTarget = -1;
+			}
+			
+			if (mode == ObjectMode.MODULE && selectingModule >= 0) {
+				modules.remove(selectingModule);
+				selectingModule = -1;
+			}
 	}
-	
 	
 	public float getPlane(Cube oldSelectorCube) {
 		
@@ -205,10 +402,25 @@ public class Logic {
 				if (positionObj.y + cubeSize > height)
 					height = positionObj.y + cubeSize;
 			}	
-		}
+		}                           
 		
 		return height;
 		
 	}
 	
+	public Model createModelWithColor(Color chosenColor) {
+		ModelBuilder modelBuilder = new ModelBuilder();
+        Model model = modelBuilder.createBox(cubeSize, cubeSize, cubeSize,
+                new Material(ColorAttribute.createDiffuse(chosenColor)),
+                Usage.Position | Usage.Normal);
+        
+        return model;
+	}
+	
+	public void nextStep() {
+		if (AI == null) {
+			AI = new AiHandler(environment, modules, targets); 
+		}
+		AI.nextStep();
+	}
 }

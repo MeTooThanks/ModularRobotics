@@ -29,5 +29,4 @@ public class Target extends Cube {
 	    public int getOpenConnections() {
 	    	return openConnections;
 	    }
-	    //public int surroundingCubes
 }

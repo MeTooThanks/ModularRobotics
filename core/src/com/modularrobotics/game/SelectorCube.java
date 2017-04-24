@@ -16,69 +16,35 @@ public class SelectorCube {
 	
 	static PlacementMode mode = PlacementMode.CUBE;
 	static float cubeSize = 5;
-	
-	static ModelBuilder modelBuilder = new ModelBuilder();
-	static Model model = modelBuilder.createBox(cubeSize, cubeSize, cubeSize,
-            new Material(ColorAttribute.createDiffuse(Color.GREEN)),
-            Usage.Position | Usage.Normal);
-	
-	public static Cube createSelectorCube(int cubeSize) {
+	public static Cube createSelectorCube(int initCubeSize) {
+		cubeSize = initCubeSize;
 		
-		ModelBuilder modelBuilder = new ModelBuilder();
-        Model model = modelBuilder.createBox(cubeSize, cubeSize, cubeSize,
-                new Material(ColorAttribute.createDiffuse(Color.GREEN)),
-                Usage.Position | Usage.Normal);
-        
-		Cube initSelectorCube = new Cube(model, 0, 0, 0);
-		
-		return initSelectorCube;
+		return createSelectorCube(Color.GREEN, Vector3.Zero);
 	}
 	
 	public static Cube cycleMode(Cube oldSelectorCube) {
-		
 		Vector3 position = new Vector3();
 		oldSelectorCube.transform.getTranslation(position);
-		float cubeSize = oldSelectorCube.bounds.getHeight();
 
 		if (mode == PlacementMode.CUBE) {
 			mode = PlacementMode.MODULE;
-			
-			
-			ModelBuilder modelBuilder = new ModelBuilder();
-	        model = modelBuilder.createBox(cubeSize, cubeSize, cubeSize,
-	                new Material(ColorAttribute.createDiffuse(Color.RED)),
-	                Usage.Position | Usage.Normal);
-	        
-			Cube selectorCube  = new Cube(model, position.x, position.y, position.z);
-			return selectorCube;
-			
-		}
-		if (mode == PlacementMode.MODULE) {
+			return createSelectorCube(Color.RED, position);
+		} else if (mode == PlacementMode.MODULE) {
 			mode = PlacementMode.TARGET;
-			
-			ModelBuilder modelBuilder = new ModelBuilder();
-	        model = modelBuilder.createBox(cubeSize, cubeSize, cubeSize,
-	                new Material(ColorAttribute.createDiffuse(Color.BLUE)),
-	                Usage.Position | Usage.Normal);
-	        
-			Cube selectorCube  = new Cube(model, position.x, position.y, position.z);
-			return selectorCube;
-			
-		}
-		if (mode == PlacementMode.TARGET) {
+			return createSelectorCube(Color.BLUE, position);
+		} else {
 			mode = PlacementMode.CUBE;
-			
-			ModelBuilder modelBuilder = new ModelBuilder();
-	        model = modelBuilder.createBox(cubeSize, cubeSize, cubeSize,
-	                new Material(ColorAttribute.createDiffuse(Color.GREEN)),
-	                Usage.Position | Usage.Normal);
-	        
-			Cube selectorCube  = new Cube(model, position.x, position.y, position.z);
-			return selectorCube;
-			
+			return createSelectorCube(Color.GREEN, position);
 		}
-		
-		return null;
-		
+	}
+	
+	public static Cube createSelectorCube(Color chosenColor, Vector3 position) {
+		ModelBuilder modelBuilder = new ModelBuilder();
+        Model model = modelBuilder.createBox(cubeSize, cubeSize, cubeSize,
+                new Material(ColorAttribute.createDiffuse(chosenColor)),
+                Usage.Position | Usage.Normal);
+	
+        Cube selectorCube  = new Cube(model, position.x, position.y, position.z);
+        return selectorCube;
 	}
 }

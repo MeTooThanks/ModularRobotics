@@ -5,13 +5,18 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputMultiplexer;
 import com.badlogic.gdx.InputProcessor;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.PerspectiveCamera;
+import com.badlogic.gdx.graphics.VertexAttributes.Usage;
 import com.badlogic.gdx.graphics.g3d.Environment;
+import com.badlogic.gdx.graphics.g3d.Material;
+import com.badlogic.gdx.graphics.g3d.Model;
 import com.badlogic.gdx.graphics.g3d.ModelBatch;
 import com.badlogic.gdx.graphics.g3d.attributes.ColorAttribute;
 import com.badlogic.gdx.graphics.g3d.environment.DirectionalLight;
 import com.badlogic.gdx.graphics.g3d.utils.FirstPersonCameraController;
+import com.badlogic.gdx.graphics.g3d.utils.ModelBuilder;
 
 import java.util.ArrayList;
 
@@ -27,6 +32,9 @@ public class ModularRobotics extends ApplicationAdapter implements InputProcesso
 	int selecting;
 	Cube selectorCube;
 	int cubeSize;
+	int fileSel = 0;
+	ModelBuilder modelBuilder;
+	Model envModel, modModel, tarModel;
 	
 	@Override
 	public void create () {
@@ -38,6 +46,18 @@ public class ModularRobotics extends ApplicationAdapter implements InputProcesso
 		camera.near = 1f;
 		camera.far = 300f;
 		camera.update();
+		
+		
+		modelBuilder = new ModelBuilder();
+		envModel = modelBuilder.createBox(cubeSize, cubeSize, cubeSize,
+                new Material(ColorAttribute.createDiffuse(Color.GRAY)),
+                Usage.Position | Usage.Normal);
+		modModel = modelBuilder.createBox(cubeSize, cubeSize, cubeSize,
+                new Material(ColorAttribute.createDiffuse(Color.RED)),
+                Usage.Position | Usage.Normal);
+		tarModel = modelBuilder.createBox(cubeSize, cubeSize, cubeSize,
+                new Material(ColorAttribute.createDiffuse(Color.BLUE)),
+                Usage.Position | Usage.Normal);
 		
 		container = new ArrayList<Cube>();
 		targets = new ArrayList<Target>();
@@ -104,12 +124,12 @@ public class ModularRobotics extends ApplicationAdapter implements InputProcesso
 		
 		//inserts Cube object
 		if (keycode == Input.Keys.SPACE) {
-			logic.placeCube(selectorCube);
+			logic.placeObject(selectorCube);
 		}
 		
 		//removes Cube object
 		if (keycode == Input.Keys.BACKSPACE) {
-			logic.removeCube(selecting);
+			logic.removeObject();
 		}
 		
 		//cycles through objects: cube, module, target
@@ -117,9 +137,9 @@ public class ModularRobotics extends ApplicationAdapter implements InputProcesso
 			selectorCube = SelectorCube.cycleMode(selectorCube);
 		}
 		
-		if (keycode == Input.Keys.F) {
-			//configWriter.writeAll(container, targets, modules);
-			System.out.println("Your file has been saved!");
+		//inits AI
+		if (keycode == Input.Keys.N) {
+			logic.nextStep();
 		}
 				return true;
 	}
@@ -147,7 +167,52 @@ public class ModularRobotics extends ApplicationAdapter implements InputProcesso
 		if (keycode == Input.Keys.D) {
 			cameraController.keyUp(keycode);
 		}
-		
+		if (keycode == Input.Keys.NUM_1) {
+			fileSel = 1;
+		}
+		if (keycode == Input.Keys.NUM_2) {
+			fileSel = 2;
+		}
+		if (keycode == Input.Keys.NUM_3) {
+			fileSel = 3;
+		}
+		if (keycode == Input.Keys.NUM_4) {
+			fileSel = 4;
+		}
+		if (keycode == Input.Keys.NUM_5) {
+			fileSel = 5;
+		}
+		if (keycode == Input.Keys.K) {
+			LoadSave.save(container, modules, targets, fileSel);
+		}
+		if (keycode == Input.Keys.L) {
+			LoadSave.load(fileSel, envModel, modModel, tarModel);
+			if (LoadSave.environment != null) {
+				container.clear();
+				for (int i = 0; i < LoadSave.environment.size(); i++) {
+					container.add(LoadSave.environment.get(i));
+				}
+			}
+			if (LoadSave.modules != null) {
+				modules.clear();
+				for (int i = 0; i < LoadSave.modules.size(); i++) {
+					modules.add(LoadSave.modules.get(i));
+				}
+			}
+			if (LoadSave.targets != null) {
+				targets.clear();
+				for (int i = 0; i < LoadSave.targets.size(); i++) {
+					targets.add(LoadSave.targets.get(i));
+				}
+			}
+			
+
+			logic = new Logic(container, targets, modules, camera, cubeSize);
+			LoadSave.environment = null;
+			LoadSave.modules = null;
+			LoadSave.targets = null;
+		}
+			
 		return true;
 	}
 	
